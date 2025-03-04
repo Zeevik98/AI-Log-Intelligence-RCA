@@ -1,0 +1,5 @@
+# charts/security/values.yaml
+# --------------------------
+# Define toggle flags for Falco and Gatekeeper
+enableFalcoRules: true
+enableGatekeeper: true

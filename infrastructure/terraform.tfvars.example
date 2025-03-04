@@ -1,0 +1,4 @@
+# Sample variable overrides
+cluster_name = "my-organization-rca-cluster"
+region       = "us-east-1"
+provider     = "aws"

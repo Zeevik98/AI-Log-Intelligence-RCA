@@ -1,0 +1,9 @@
+[2025-06-10 09:00:21] [INFO] Build #913 started for microservice-catalog
+[2025-06-10 09:00:27] [INFO] Cloning repository from <git@repo.example.com:catalog.git>
+[2025-06-10 09:00:40] [WARN] Docker build context is large (400 MB). This might slow build.
+[2025-06-10 09:00:55] [ERROR] npm install => Connection timed out after 30000ms
+[2025-06-10 09:01:02] [INFO] Retrying npm install...
+[2025-06-10 09:01:20] [ERROR] npm install => Connection timed out again
+[2025-06-10 09:01:30] [ERROR] Build #913 failed. Exiting with code 1
+...
+[2025-06-10 09:02:10] [INFO] Sending failure notification to DevOps team

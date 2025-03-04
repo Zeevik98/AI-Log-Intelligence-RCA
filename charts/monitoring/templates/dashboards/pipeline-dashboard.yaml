@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: falco-dashboard
+  labels:
+    grafana_dashboard: "1"
+data:
+  falco-dashboard.json: |
+    {
+      "title": "Falco Security Alerts",
+      "panels": [
+        {
+          "type": "table",
+          "title": "Recent Falco Alerts",
+          "targets": [
+            {
+              "expr": "sum by (rule) (increase(falco_alerts[5m]))"
+            }
+          ]
+        }
+      ]
+    }

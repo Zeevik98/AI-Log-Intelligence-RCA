@@ -1,0 +1,8 @@
+[2025-06-10 09:10:02] [INFO] Cluster Autoscaler: Pod llm-job-7827 is unschedulable - insufficient CPU
+[2025-06-10 09:10:03] [INFO] Requesting new node from node group "spot-pool"
+[2025-06-10 09:10:20] [WARN] Spot capacity not available in zone us-east-1a
+[2025-06-10 09:10:25] [INFO] Fallback to on-demand node after spot request timed out
+[2025-06-10 09:10:40] [ERROR] Scale-up operation delayed: not enough subnets with capacity
+[2025-06-10 09:10:45] [INFO] Pod llm-job-7827 remains Pending
+...
+[2025-06-10 09:11:10] [INFO] Retrying scale-up with multi-zone approach

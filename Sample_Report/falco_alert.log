@@ -1,0 +1,8 @@
+[2025-06-10 09:05:10] [FALCO] Rule: Unexpected inbound connection
+[2025-06-10 09:05:10] [FALCO] Container: job-nlp-4567, Command: /bin/bash
+[2025-06-10 09:05:12] [FALCO] Rule: Write below /etc
+[2025-06-10 09:05:12] [FALCO] Container: job-nlp-4567, File: /etc/resolv.conf
+[2025-06-10 09:05:15] [FALCO] Rule: Container escaping attempt
+[2025-06-10 09:05:16] [FALCO] Alert severity: CRITICAL
+...
+[2025-06-10 09:05:30] [FALCO] Pod: job-nlp-4567 forcibly killed by Falco

@@ -1,0 +1,89 @@
+{{- if .Values.enableFalcoRules }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: falco-custom-rules
+  labels:
+    app: falco
+data:
+  falco-rules.yaml: |-
+    # (1) Write below /etc
+    - rule: Write below etc
+      desc: Detect writes under /etc, often used by attackers to hijack configs
+      condition: evt.type in (open,openat,creat) and fd.directory=/etc and evt.dir=< and not proc.name in (falco, syslog-ng, systemd)
+      output: "File opened for write below /etc (user=%user.name command=%proc.cmdline file=%fd.name)"
+      priority: WARNING
+      tags: [filesystem, mitre_persistence]
+
+    # (2) Terminal shell in container
+    - rule: Terminal shell in container
+      desc: Shell spawned in a container indicates possible debugging or intrusion
+      condition: container and proc.name in (bash,sh,zsh,csh) and proc.tty != 0
+      output: "Shell spawned in container (container=%container.info command=%proc.cmdline)"
+      priority: NOTICE
+      tags: [container, mitre_execution]
+
+    # (3) Privilege escalation via setuid
+    - rule: Privilege escalation
+      desc: Alert on setuid calls, could be an attempt to gain root privileges
+      condition: evt.type = setuid and evt.arg.newuid < 1000
+      output: "Privilege escalation attempt (newuid=%evt.arg.newuid user=%user.name command=%proc.cmdline)"
+      priority: WARNING
+      tags: [process, mitre_privilege_escalation]
+
+    # (4) SSH key access
+    - rule: Read SSH keys
+      desc: Reading private SSH keys can indicate credential theft
+      condition: fd.name in (/root/.ssh/id_rsa, /home/*/.ssh/id_rsa) and evt.type in (open,openat) and evt.dir=<
+      output: "Potential SSH key read (file=%fd.name command=%proc.cmdline user=%user.name)"
+      priority: CRITICAL
+      tags: [credential_access]
+
+    # (5) Loading kernel modules
+    - rule: Load kernel module
+      desc: Attackers may run insmod/modprobe/rmmod to gain deeper system control
+      condition: proc.name in (insmod, modprobe, rmmod)
+      output: "Kernel module load/unload (command=%proc.cmdline user=%user.name)"
+      priority: WARNING
+      tags: [kernel, mitre_privilege_escalation]
+
+    # (6) Creating files in /root
+    - rule: Create file in root home
+      desc: Creating new files in /root can be suspicious for persistence
+      condition: fd.directory=/root and evt.type in (open,openat,creat) and evt.dir=<
+      output: "File creation in /root (file=%fd.name user=%user.name cmd=%proc.cmdline)"
+      priority: NOTICE
+      tags: [persistence]
+
+    # (7) Unexpected outbound connections
+    - rule: Outbound connection from container to unusual IP
+      desc: Alert on container egress outside 10.x range (example)
+      condition: container and evt.type=connect and fd.l4proto in (tcp, udp) and not (fd.sip in 10.0.0.0/8)
+      output: "Unusual outbound container connection (destination=%fd.sip command=%proc.cmdline)"
+      priority: WARNING
+      tags: [network, exfiltration]
+
+    # (8) Access to host filesystem
+    - rule: Mount host filesystem in container
+      desc: Attackers or misconfigured containers might mount the host
+      condition: container and evt.type=mount and fd.name!="/etc/hosts" and fd.name!="/etc/resolv.conf"
+      output: "Host filesystem mount attempt in container (mount=%fd.name user=%user.name command=%proc.cmdline)"
+      priority: CRITICAL
+      tags: [container_escape, privilege_escalation]
+
+    # (9) Running suspicious binaries from /tmp
+    - rule: Exec from /tmp
+      desc: /tmp often used to drop malicious scripts
+      condition: evt.type=execve and proc.exepath startswith /tmp
+      output: "Execution from /tmp (exe=%proc.exepath command=%proc.cmdline user=%user.name)"
+      priority: WARNING
+      tags: [execution, privilege_escalation]
+
+    # (10) Privileged container launched
+    - rule: Launch privileged container
+      desc: Creating a container with privileged=true is extremely risky
+      condition: container and evt.type=container and container.privileged=true
+      output: "Privileged container launched (container=%container.info user=%user.name)"
+      priority: CRITICAL
+      tags: [container, misconfiguration]
+{{- end }}

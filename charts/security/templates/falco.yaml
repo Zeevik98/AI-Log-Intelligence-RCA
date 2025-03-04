@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: falco
+spec:
+  selector:
+    matchLabels:
+      app: falco
+  template:
+    metadata:
+      labels:
+        app: falco
+    spec:
+      serviceAccountName: falco
+      containers:
+      - name: falco
+        image: falcosecurity/falco:0.34.1
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        volumeMounts:
+          - name: lib-modules
+            mountPath: /host/lib/modules
+            readOnly: true
+          - name: usr-src
+            mountPath: /host/usr
+            readOnly: true
+      volumes:
+        - name: lib-modules
+          hostPath:
+            path: /lib/modules
+        - name: usr-src
+          hostPath:
+            path: /usr/src

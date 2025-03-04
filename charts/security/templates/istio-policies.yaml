@@ -1,0 +1,165 @@
+# istio-policies.yaml
+# -------------------
+# 10 common Istio policy/CRD examples, all in one file.
+
+---
+# 1) Enable Strict mTLS in a namespace
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: enable-strict-mtls
+  namespace: my-namespace
+spec:
+  mtls:
+    mode: STRICT
+
+---
+# 2) Require JWT Auth for a microservice
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: require-jwt
+  namespace: my-namespace
+spec:
+  selector:
+    matchLabels:
+      app: my-service
+  jwtRules:
+    - issuer: "https://example.com/"
+      jwksUri: "https://example.com/.well-known/jwks.json"
+
+---
+# 3) AuthorizationPolicy: Only allow GET /public
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-get-public
+  namespace: my-namespace
+spec:
+  selector:
+    matchLabels:
+      app: my-service
+  rules:
+    - to:
+      - operation:
+          methods: ["GET"]
+          paths: ["/public*"]
+
+---
+# 4) Deny all egress by default in my-namespace
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: deny-all-egress
+  namespace: my-namespace
+spec:
+  egress: []
+
+---
+# 5) Allow egress to a specific external service
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: external-api-allowed
+  namespace: my-namespace
+spec:
+  hosts:
+    - api.external-service.com
+  ports:
+    - number: 443
+      name: https
+      protocol: TLS
+  resolution: DNS
+
+---
+# 6) Rate Limiting stub (via EnvoyFilter)
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: rate-limit-example
+  namespace: my-namespace
+spec:
+  workloadSelector:
+    labels:
+      app: my-service
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: SIDECAR_OUTBOUND
+        listener:
+          portNumber: 80
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: "envoy.filters.http.lua"
+          typed_config:
+            "@type": "type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua"
+            inlineCode: |
+              function envoy_on_request(handle)
+                -- example Lua code for rate limiting or custom logic
+              end
+
+---
+# 7) PeerAuthentication: Permissive mTLS (in dev-namespace)
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: permissive-mtls
+  namespace: dev-namespace
+spec:
+  mtls:
+    mode: PERMISSIVE
+
+---
+# 8) AuthorizationPolicy: Deny non-admin to /admin*
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-non-admin
+  namespace: my-namespace
+spec:
+  selector:
+    matchLabels:
+      app: admin-service
+  rules:
+    - from:
+      - source:
+          requestPrincipals: ["adminuser@example.com"]
+      to:
+      - operation:
+          paths: ["/admin*", "/internal*"]
+
+---
+# 9) VirtualService for A/B testing
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: ab-testing
+  namespace: my-namespace
+spec:
+  hosts:
+    - my-app.example.com
+  http:
+    - route:
+      - destination:
+          host: my-app-v1
+        weight: 80
+      - destination:
+          host: my-app-v2
+        weight: 20
+
+---
+# 10) Kiali visibility
+apiVersion: kiali.io/v1alpha1
+kind: Kiali
+metadata:
+  name: kiali
+  namespace: istio-system
+spec:
+  auth:
+    strategy: anonymous
+  deployment:
+    namespace: istio-system

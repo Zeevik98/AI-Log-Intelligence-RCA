@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nlp-job
+spec:
+  schedule: "{{ .Values.nlpJob.schedule }}"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: nlp-container
+              image: "{{ .Values.nlpJob.image }}"
+              volumeMounts:
+                - name: pipeline-data
+                  mountPath: /data
+          volumes:
+            - name: pipeline-data
+              persistentVolumeClaim:
+                claimName: pipeline-pvc
+          restartPolicy: OnFailure

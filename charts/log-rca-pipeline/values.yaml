@@ -1,0 +1,11 @@
+nlpJob:
+  image: "myregistry/nlp-worker:latest"
+  schedule: "0 2 * * *"  # daily run at 2 AM
+
+llmJob:
+  image: "myregistry/llm-worker:latest"
+  schedule: "0 3 * * *"  # daily run at 3 AM
+
+persistentVolume:
+  size: "10Gi"
+  storageClassName: "standard"

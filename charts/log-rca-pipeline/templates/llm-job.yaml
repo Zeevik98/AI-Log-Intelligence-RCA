@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: llm-job
+spec:
+  schedule: "{{ .Values.llmJob.schedule }}"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: llm-container
+              image: "{{ .Values.llmJob.image }}"
+              volumeMounts:
+                # The main pipeline volume for input/output data
+                - name: pipeline-data
+                  mountPath: /data
+
+                # New mount for environment doc references (env_overview.yaml)
+                - name: env-docs
+                  mountPath: /data/docs
+                  readOnly: true
+
+          volumes:
+            # Existing PVC for NLP input & LLM output
+            - name: pipeline-data
+              persistentVolumeClaim:
+                claimName: pipeline-pvc
+
+            # Mount the ConfigMap that contains env_overview.yaml
+            - name: env-docs
+              configMap:
+                name: env-doc-config
+                # This ensures the key "env_overview.yaml" is placed at /data/docs/env_overview.yaml
+                items:
+                  - key: env_overview.yaml
+                    path: env_overview.yaml
+
+          restartPolicy: OnFailure

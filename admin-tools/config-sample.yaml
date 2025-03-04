@@ -1,0 +1,4 @@
+adminCredentials:
+  username: admin
+  password: example123
+clusterContext: my-k8s-cluster

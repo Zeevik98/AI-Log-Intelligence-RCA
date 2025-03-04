@@ -1,0 +1,11 @@
+# Ignore Terraform state
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# Python caches
+__pycache__/
+*.pyc
+
+# Others
+.env

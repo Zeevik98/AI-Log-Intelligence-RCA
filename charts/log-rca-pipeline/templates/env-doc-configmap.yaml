@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: env-doc-config
+  labels:
+    app: log-rca-pipeline
+data:
+  # This is a simple text-based overview. You can place references to PDF/JPEG 
+  # or short textual descriptions of your environment. 
+  # In a real setup, you might store entire environment details, 
+  # or keep minimal references to external docs. 
+  env_overview.yaml: |
+    environmentName: "Multi-Cloud Dev Environment"
+    ciTools:
+      - name: "Jenkins"
+        usage: "CI/CD for microservices"
+      - name: "GitLab"
+        usage: "Code hosting, some pipelines"
+    networking:
+      loadBalancerType: "NodePort for dev, ALB for production"
+      serviceMesh: "Istio with mTLS Strict mode"
+    logsSources:
+      - "External S3 Bucket (user-mounted)"
+      - "NFS share in /data/logs"
+    diagrams:
+      architectureDiagram: "architecture_diagram.jpg"
+      extraDocs: "env_overview.pdf"
+    notes: "This environment is partly ephemeral; node autoscaler is enabled for cost savings."

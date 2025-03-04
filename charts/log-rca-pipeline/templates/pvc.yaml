@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pipeline-pvc
+  annotations:
+    # Cloud-agnostic note: user must ensure the storage class is encrypted if required
+    volume.beta.kubernetes.io/storage-class: "encrypted-standard"
+spec:
+  storageClassName: "encrypted-standard"  # Or "standard" that is known to be encrypted
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: "{{ .Values.persistentVolume.size }}"
